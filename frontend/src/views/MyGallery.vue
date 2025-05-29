@@ -1,65 +1,50 @@
 <template>
-  <main>
-    <section>
-    <h2>Галерея</h2>
-    </section>
-    <section>
-      <img src="@/assets/images/photo_1.jpg" alt="photo_1">
-      <img src="@/assets/images/photo_2.jpg" alt="photo_2">
-      <img src="@/assets/images/photo_3.jpg" alt="photo_3">
-      <img src="@/assets/images/photo_4.jpg" alt="photo_4">
-      <img src="@/assets/images/photo_5.jpg" alt="photo_5">
-      <img src="@/assets/images/photo_6.jpg" alt="photo_6">
-      <img src="@/assets/images/photo_7.jpg" alt="photo_7">
-    </section>
-  </main>
+  <div style="width: 100%; padding: 2em;">
+    <n-h2 prefix="bar">Галерея</n-h2>
+
+    <n-grid :cols="4" :x-gap="16" :y-gap="16" responsive="screen">
+      <n-gi v-for="(img, index) in images" :key="index">
+        <n-image
+  :src="img.url"
+  :alt="`photo_${index + 1}`"
+  object-fit="cover"
+  width="100%"
+  height="220"
+  preview-disabled
+/>
+
+      </n-gi>
+    </n-grid>
+  </div>
 </template>
-  
+
 <script>
-  export default {
-    methods: {
-      goToAbout() {
-        this.$router.push('/about'); // Программный переход на страницу
-      }
-    }
+import { NH2, NGrid, NGi, NImage } from 'naive-ui';
+import axios from 'axios'; // убедись, что axios установлен и импортирован
+
+export default {
+  components: {
+    NH2,
+    NGrid,
+    NGi,
+    NImage
+  },
+  data() {
+    return {
+      images: []  // изначально пустой массив
+    };
+  },
+  mounted() {
+    // запрос к API для получения фото
+    axios.get('http://localhost:8081/api/photos')
+      .then(response => {
+        this.images = response.data; // ожидаем, что массив объектов с { id, name, url }
+      })
+      .catch(error => {
+        console.error('Ошибка загрузки фото', error);
+      });
   }
+};
 </script>
 
-<style scoped>
-main {
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: column;
-  align-items: center;
-  h2 {
-    width: 100%;
-    text-align: center;
-    overflow: hidden;  
-  }
-  h2:before, h2:after {
-    content: '';
-    display: inline-block;
-    vertical-align: middle;
-    width: 100%;
-    height: 1px;
-    background: #000;
-    border: solid #f2e8fc;
-    border-width: 0 1em;
-  }
-  h2:before {
-    margin-left: -100%;
-  }
-  h2:after {
-    margin-right: -100%;
-  }
-}
-section {
-  display: flex;
-  flex-wrap: wrap;
-}
-img {
-  max-width: 31%;
-  object-fit: contain;
-  margin: 1%;
-}
-</style>
+

@@ -9,25 +9,38 @@ import AdminUsers from '@/views/AdminUsers.vue';
 import AdminGallery from '@/views/AdminGallery.vue';
 import AdminPosts from '@/views/AdminPosts.vue';
 import AdminMain from '@/views/AdminMain.vue';
+import PostComments from '@/views/PostComments.vue';
 
 const routes = [
   {
-    path: '/', name: 'Home', component: Home,
+    path: '/', 
+    name: 'Home', 
+    component: Home,
   },
   {
-    path: '/gallery', name: 'Gallery', component: Gallery,
+    path: '/gallery', 
+    name: 'Gallery', 
+    component: Gallery,
   },
   {
-    path: '/faq', name: 'FAQ', component: FAQ,
+    path: '/faq', 
+    name: 'FAQ', 
+    component: FAQ,
   },
   {
-    path: '/artist', name: 'Artist', component: Artist,
+    path: '/artist', 
+    name: 'Artist', 
+    component: Artist,
   },
   {
-    path: '/profile', name: 'Profile', component: Profile,
+    path: '/profile', 
+    name: 'Profile', 
+    component: Profile,
   },
   {
-    path: '/admin', name: 'Admin', component: Admin,
+    path: '/admin', 
+    name: 'Admin', 
+    component: Admin,
     children: [
       {
         path: '', // Главная страница админки (по умолчанию)
@@ -51,6 +64,11 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/posts/:id/comments', // Оставляем маршрут для комментариев
+    name: 'PostComments',
+    component: PostComments,
+  },
 ];
 
 const router = createRouter({
@@ -59,3 +77,4 @@ const router = createRouter({
 });
 
 export default router;
+

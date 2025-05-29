@@ -1,85 +1,50 @@
 <template>
-    <main>
-        <section>
-            <h2>О художнике</h2>
-            <div class="container">
-                <p class="text">Привет! На данный момент вы находитесь на моём, пусть ещё не популярном сайте. Я - Xiany, начинающий художник, и скорее всего вы будете наблюдать здесь мои арты которые по стилистике будут очень меняться, ведь я ещё в поисках своего стиля^-^ а также мои любительские фотографии.</p>
-                <div class="photo-block">
-                    <img class="image" src="@/assets/images/author.jpg" alt="author">
-                    <p class="podpis">Анужис Ксения, 20 лет</p>
-                </div>
-            </div>
-        </section>
-    </main>
-</template>
-
-<script>
- 
-</script>
-
-<style scoped>
-main {
-
-    flex: 1 0 auto;
-    h2 {
-        width: 100%;
-        text-align: center;
-        overflow: hidden;
-     }
-
-     h2:before, h2:after {
-        content: '';
-        display: inline-block;
-        vertical-align: middle;
-        width: 100%;
-        height: 1px;
-        background: #000;
-        border: solid #f2e8fc;
-        border-width: 0 1em;
+    <n-flex vertical style="padding: 2em;">
+      <n-h2 prefix="bar" style="text-align: left;">О художнике</n-h2>
+  
+      <n-card
+        style="width: 100%;" 
+        content-style="display: flex; gap: 2em; align-items: flex-start; justify-content: space-between;"
+        bordered
+      >
+        <!-- Текстовое описание, которое занимает всю доступную ширину -->
+        <n-p style="flex: 1;">
+          Привет! На данный момент вы находитесь на моём, пусть ещё не популярном сайте. Я — Xiany, начинающий художник, и скорее всего вы будете наблюдать здесь мои арты, которые по стилистике будут очень меняться, ведь я ещё в поисках своего стиля ^-^ а также мои любительские фотографии.
+        </n-p>
+  
+        <!-- Фото справа -->
+        <div style="flex-shrink: 0; width: 300px; text-align: center;">
+          <n-image
+            :src="require('@/assets/images/author.jpg')"
+            alt="author"
+            width="300"
+            object-fit="cover"
+            style="border-radius: 10px;"
+          />
+          <n-text depth="3" style="display: block; margin-top: 0.5em;">Анужис Ксения, 20 лет</n-text>
+        </div>
+      </n-card>
+    </n-flex>
+  </template>
+  
+  <script>
+  import { NH2, NFlex, NCard, NP, NText, NImage } from 'naive-ui';
+  
+  export default {
+    components: {
+      NH2,
+      NFlex,
+      NCard,
+      NP,
+      NText,
+      NImage
     }
+  };
+  </script>
+  
+  
+  
+  
+  
+  
 
-    h2:before {
-        margin-left: -100%;
-    }
-
-    h2:after {
-        margin-right: -100%;
-    }
-    p {
-        font-size: 20px; /* Размер текста в пикселях */
-        text-align: left;
-        margin: 0;
-    }
-    .container {
-        display: flex;
-        justify-content: flex-start; /* Выравниваем содержимое влево */
-        align-items: flex-start; /* Убираем вертикальное центрирование */
-        padding-left: 20px;
-        
-    }
-    .text {
-        flex: 1; /* Текст занимает всё оставшееся пространство */
-    }
-    .photo-block {
-        display: flex;
-        flex-direction: column; /* Расположить элементы вертикально */
-        align-items: center; /* Центрировать подпись и фото по горизонтали */
-        margin-top: 20px; /* Отступ от хедера */
-    }
-
-    .image {
-        max-width: 300px; /* Задай фиксированный размер фото */
-        height: auto; /* Сохрани пропорции изображения */
-        margin-bottom: 20px;
-        
-    }
-    .podpis {
-        font-size: 20px; /* Размер шрифта подписи */
-        color: #000000; /* Цвет текста подписи */
-        text-align: center;
-    }
- 
-
-
-}
-</style>

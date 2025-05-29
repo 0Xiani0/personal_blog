@@ -1,20 +1,13 @@
 <template>
-    <footer> <!-- это тег в самом конце страницы(подвал страницы) -->
-        <p>© 2024 xiany.ru.Учебный проект</p>  <!-- это тег абзаца в подвале страницы -->
-    </footer>
+    <n-p>© 2024 blog.xiany.ru. Учебный проект</n-p>  <!-- это тег абзаца в подвале страницы -->
 </template>
 
 <script>
+import { NP } from 'naive-ui';
 
-</script>
-
-<style scoped>
-footer {
-    width: 100%;
-    border-top: 1px solid #000;
-
-    flex: 0 0 auto;
-
-    text-align: center;
+export default {
+    components: {
+        NP
+    }
 }
-</style>
+</script>

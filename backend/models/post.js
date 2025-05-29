@@ -1,27 +1,63 @@
 import db from '../database/index.js';
 
 export default class Post {
-  constructor(heading, description, create_datetime, author_id, author_username) {
+  constructor(heading, description, created_at, updated_at, author_id, author_username) {
     this.heading = heading;
     this.description = description;
-    this.create_datetime = create_datetime;
+    this.created_at = created_at;
+    this.updated_at = updated_at;
     this.author_id = author_id;
     this.author_username = author_username;
   }
 
   // Получить все посты
-  static async get() {
-    return await db.query(
+  static async get(currentUserId = null) {
+    const result = await db.query(
       `SELECT 
-        id, 
-        heading,
-        description,
-        created_at,
-        updated_at,
-        user_id AS author_id,
-        (SELECT username FROM users WHERE users.id = posts.user_id) AS author_username
-      FROM posts`
+        posts.id, 
+        posts.heading,
+        posts.description,
+        posts.created_at,
+        posts.updated_at,
+        posts.user_id AS author_id,
+        (SELECT username FROM users WHERE users.id = posts.user_id) AS author_username,
+        (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) AS like_count,
+        CASE 
+          WHEN $1::INTEGER IS NOT NULL THEN EXISTS (
+            SELECT 1 FROM likes WHERE likes.post_id = posts.id AND likes.user_id = $1::INTEGER
+          )
+          ELSE false
+        END AS liked_by_user
+      FROM posts`,
+      [currentUserId]
     );
+    return result.rows;
+  }
+
+  // Получить один пост по ID
+  static async getOne(id, currentUserId = null) {
+    const result = await db.query(
+      `SELECT 
+        posts.id, 
+        posts.heading,
+        posts.description,
+        posts.created_at,
+        posts.updated_at,
+        posts.user_id AS author_id,
+        (SELECT username FROM users WHERE users.id = posts.user_id) AS author_username,
+        (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) AS like_count,
+        CASE 
+          WHEN $2::INTEGER IS NOT NULL THEN EXISTS (
+            SELECT 1 FROM likes WHERE likes.post_id = posts.id AND likes.user_id = $2::INTEGER
+          )
+          ELSE false
+        END AS liked_by_user
+      FROM posts
+      WHERE posts.id = $1`,
+      [id, currentUserId]
+    );
+
+    return result.rows[0] || null;
   }
 
   // Создать новый пост
@@ -49,8 +85,7 @@ export default class Post {
 
   // Удалить пост
   static async delete(id) {
-    await db.query(`DELETE FROM posts WHERE id = $1`, [id]);
+    await db.query('DELETE FROM posts WHERE id = $1', [id]);
     return { message: 'Post deleted successfully' };
   }
 }
-

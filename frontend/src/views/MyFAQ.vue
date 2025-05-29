@@ -1,90 +1,72 @@
 <template>
-    <main>
-        <h2>FAQ</h2>
-        <div class="faq-item">
-          <div class="faq-question">
-            <h3>Как я могу оставить комментарии?</h3>
-            <img src="@/assets/icons/paperclip.svg" alt="paperclip" class="faq-icon" @click="toggleAnswer">
-          </div>
-          <div class="faq-answer" v-show="isAnswerVisible">
-            Кликнув на сам пост можно открыть личное окно поста, пролистав который ниже можно заметить комментарии, где и можно прокомментировать пост.
-          </div>
-        </div> 
-    </main>
-  </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        isAnswerVisible: false, 
-      };
-    },
-    methods: {
-      
-      toggleAnswer() {
-        this.isAnswerVisible = !this.isAnswerVisible; 
-      },
-    },
-  };
-  </script>
-  
-  <style scoped>
-  main {
-    width: 100%;
-    flex: 1 0 auto;
+  <n-flex vertical style="padding: 2em;">
+    <!-- Используем n-h2 с тем же стилем, что и на других страницах -->
+    <n-h2 prefix="bar">Вопросы и Ответы</n-h2>
+
+    <div style="width: 100%; max-width: 800px; padding-bottom: 40px;">
+      <n-collapse accordion>
+        <n-collapse-item title="Как я могу оставить комментарии?" name="1">
+          Кликнув на сам пост можно открыть личное окно поста, пролистав который ниже можно заметить комментарии, где и можно прокомментировать пост.
+        </n-collapse-item>
+        <n-collapse-item title="Что такое галерея и зачем она нужна?" name="3">
+          Галерея — это визуальный раздел блога, где отображаются изображения или иллюстрации. Она помогает передать атмосферу и контекст постов.
+        </n-collapse-item>
+        <n-collapse-item title="Как авторизоваться на сайте?" name="6">
+          Чтобы авторизоваться, перейдите на страницу входа и введите свой email и пароль. После этого вы получите доступ к функциям, недоступным для гостей.
+        </n-collapse-item>
+        <n-collapse-item title="Как устроена модерация контента?" name="8">
+          Все комментарии и посты могут быть проверены модератором. Запрещён оскорбительный, спам-контент и материалы, нарушающие правила платформы.
+        </n-collapse-item>
+        <n-collapse-item title="Можно ли изменить внешний вид блога?" name="10">
+          Пока такая возможность недоступна, но в будущем планируется внедрение пользовательских тем и настроек интерфейса.
+        </n-collapse-item>
+        <n-collapse-item title="Почему я не вижу лайки или комментарии?" name="13">
+          Убедитесь, что вы авторизованы. Некоторые функции, такие как лайки и комментарии, доступны только зарегистрированным пользователям.
+        </n-collapse-item>
+        <n-collapse-item title="Как связаться с автором блога?" name="17">
+          Внизу сайта есть форма обратной связи. Также можно оставить комментарий под любым постом — автор обязательно его увидит.
+        </n-collapse-item>
+        <n-collapse-item title="Будет ли мобильная версия?" name="18">
+          Сайт адаптирован под разные экраны и хорошо работает на мобильных устройствах. В будущем планируется отдельное мобильное приложение.
+        </n-collapse-item>
+        <n-collapse-item title="Почему мой комментарий не отображается?" name="20">
+          Возможно, он проходит модерацию или был отклонён. Пожалуйста, соблюдайте правила общения и избегайте оскорблений.
+        </n-collapse-item>
+        <n-collapse-item title="Кто может оставлять комментарии?" name="23">
+          Комментарии могут оставлять только зарегистрированные пользователи. Это помогает защищать блог от спама и троллей.
+        </n-collapse-item>
+        <n-collapse-item title="Можно ли изменить имя пользователя?" name="24">
+          Пока эта функция недоступна. Но ты можешь удалить текущий аккаунт и создать новый с другим именем.
+        </n-collapse-item>
+        <n-collapse-item title="Зачем нужна модерация постов и комментариев?" name="25">
+          Это помогает сохранить дружественную атмосферу в блоге, исключить спам, оскорбления и недостоверную информацию.
+        </n-collapse-item>
+        <n-collapse-item title="Что делать, если я нашёл баг?" name="27">
+          Спасибо! Напиши о нём через форму обратной связи, в комментариях или напрямую автору. Это поможет сделать блог лучше.
+        </n-collapse-item>
+        <n-collapse-item title="Можно ли использовать материалы блога?" name="29">
+          Уточняй у автора поста. Большинство материалов можно использовать с указанием источника и ссылки на блог.
+        </n-collapse-item>
+      </n-collapse>
+    </div>
+  </n-flex>
+</template>
+
+<script>
+import { NCollapse, NCollapseItem, NFlex, NH2 } from 'naive-ui';
+
+export default {
+  components: {
+    NCollapse,
+    NCollapseItem,
+    NFlex,
+    NH2
   }
-  
-  h2 {
-    width: 100%;
-    text-align: center;
-    overflow: hidden;
-  }
-  
-  h2:before, h2:after {
-    content: '';
-    display: inline-block;
-    vertical-align: middle;
-    width: 100%;
-    height: 1px;
-    background: #000;
-    border: solid #f2e8fc;
-    border-width: 0 1em;
-  }
-  
-  h2:before {
-    margin-left: -100%;
-  }
-  
-  h2:after {
-    margin-right: -100%;
-  }
-  
-  .faq-item {
-    border: 1px solid #555; 
-    padding: 15px; 
-    background-color: #f2e8fc; 
-    display: flex;
-    flex-direction: column; 
-    gap: 10px; 
-    margin-bottom: 20px; 
-  }
-  
-  .faq-question {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-  }
-  
-  .faq-answer {
-    width: 80%;
-    font-size: 20px; 
-    color: #000000; 
-  }
-  
-  .faq-icon {
-    width: 45px; 
-    margin-left: 10px; 
-    cursor: pointer; 
-  }
-  </style>
+};
+</script>
+
+<style scoped>
+/* Добавьте стили для заголовков, если нужно */
+</style>
+
+

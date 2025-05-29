@@ -1,54 +1,143 @@
 <template>
-    <section>
-        <article class="heading">
-            <h2>Галерея</h2>
-            <button aria-label="Добавить фотографию">Добавить</button>
-        </article>
-        <article>
-            <img src="@/assets/images/photo_1.jpg" alt="1">
-            <div>
-                <p>Name: <b>Photo 1</b></p>
-                <p>URL: <b>@/assets/images/photo_1.jpg</b></p>
-            </div>
-            <div>
-                <button aria-label="Обновить">Обновить</button>
-                <button aria-label="Удалить">Удалить</button>
-            </div>
-        </article>
-    </section>
+  <n-space vertical :size="24">
+    <n-h2 prefix="bar">Галерея</n-h2>
+
+    <!-- Загрузка фото -->
+    <n-card>
+      <n-upload
+        :default-upload="false"
+        :show-file-list="false"
+        @change="onFileChange"
+      >
+        <n-button>Выбрать файл</n-button>
+      </n-upload>
+
+      <n-input
+        v-model:value="photoName"
+        placeholder="Название фото"
+        style="margin-top: 12px;"
+      />
+
+      <n-button
+        type="primary"
+        @click="uploadPhoto"
+        :disabled="!selectedFile || !photoName"
+        style="margin-top: 12px;"
+      >
+        Загрузить
+      </n-button>
+    </n-card>
+
+    <!-- Список фото -->
+    <n-grid :cols="4" :x-gap="16" :y-gap="16">
+      <n-gi v-for="photo in photos" :key="photo.id">
+        <n-card :title="photo.name" size="small">
+          <n-image :src="photo.url" width="100%" height="180px" object-fit="cover" />
+          <template #footer>
+            <n-button
+              type="error"
+              size="small"
+              block
+              @click="deletePhoto(photo.id)"
+            >
+              Удалить
+            </n-button>
+          </template>
+        </n-card>
+      </n-gi>
+    </n-grid>
+  </n-space>
 </template>
 
-<script>
+<script setup>
+import {
+  NH2,
+  NSpace,
+  NCard,
+  NButton,
+  NInput,
+  NImage,
+  NGrid,
+  NGi,
+  NUpload,
+  useMessage
+} from 'naive-ui'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
+// Добавь базовый URL для запросов на сервер API
+axios.defaults.baseURL = 'http://localhost:8081'
+
+const message = useMessage()
+const photos = ref([])
+const selectedFile = ref(null)
+const photoName = ref('')
+
+const fetchPhotos = async () => {
+  try {
+    const res = await axios.get('/api/photos')
+    photos.value = res.data
+  } catch (err) {
+    message.error('Ошибка загрузки фотографий')
+    console.error(err)
+  }
+}
+
+const onFileChange = ({ file }) => {
+  selectedFile.value = file.file
+}
+
+const uploadPhoto = async () => {
+  if (!selectedFile.value || !photoName.value) {
+    message.warning('Выберите файл и введите название')
+    return
+  }
+
+  const form = new FormData()
+  form.append('photo', selectedFile.value)
+  form.append('name', photoName.value)
+
+  try {
+    const res = await axios.post('/api/photos/upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    photos.value.unshift(res.data)
+    selectedFile.value = null
+    photoName.value = ''
+    message.success('Фото загружено')
+  } catch (err) {
+    message.error('Ошибка при загрузке')
+    console.error(err)
+  }
+}
+
+const deletePhoto = async (id) => {
+  try {
+    await axios.delete(`/api/photos/${id}`)
+    photos.value = photos.value.filter(p => p.id !== id)
+    message.success('Фото удалено')
+  } catch (err) {
+    message.error('Ошибка при удалении')
+    console.error(err)
+  }
+}
+
+onMounted(fetchPhotos)
 </script>
 
-<style scoped>
-section {
-    width: 80%;
-    display: flex;
-    flex-direction: column;
-}
-h2 {
-    margin: 16px;
-}
 
-article {
-    max-height: 10%;
-    margin: 4px 16px;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid black;
-}
-button {
-    background-color: #f2e8fc;  
-    color: #333;  
-    font-weight: bold;  /* Жирный текст */
-    font-size: 14px;  /* Размер шрифта */
-    border: 1px solid #000000;  /* Цвет рамки */
-    padding : 10px 20px;  /* Отступы */  
-    cursor: pointer;  /* Курсор при наведении */
-    margin: 10px;
-    
-}
 
-</style>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  

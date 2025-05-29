@@ -1,11 +1,8 @@
 import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-import store from './store'
-import { create } from 'naive-ui';
+import AppProvider from '@/AppProvider.vue'
+import router from '@/router'
+import store from '@/store'
 
-const naive = create();
-
-const app = createApp(App);
-app.use(router).use(store).use(naive);
+const app = createApp(AppProvider);
+app.use(router).use(store);
 app.mount('body');

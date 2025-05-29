@@ -40,6 +40,12 @@ export default {
     },
 
     actions: {
+        updateLogin({ commit }, payload) {
+            commit('SET_LOGIN', payload);
+        },
+        updatePassword({ commit }, payload) {
+            commit('SET_PASSWORD', payload)
+        },
         async signin({ commit, state }, router) {
             const data = {
               login: state.login,

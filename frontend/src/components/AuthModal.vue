@@ -1,153 +1,101 @@
 <template>
-  <section class="modal" v-if="isVisible" @click.self="closeModal">
-    <div class="modal-content">
-      <h2>Авторизация</h2>
-      <form @submit.prevent="handleLogin">
-        <label>
-          <input
-            type="text"
-            :value="login" 
-            @input="updateLogin" 
-            placeholder="Введите логин"
-            required
-          />
-        </label>
+  <n-modal
+    v-model:show="localVisible"
+    closable
+    @update:show="closeModal"
+  >
+    <n-card
+      title="Авторизация"
+      :bordered="false"
+      style="width: 60%;"
+    >
+      <n-form @submit.prevent="handleLogin">
+        <n-form-item label="Логин">
+          <n-input v-model="login" @input="updateLogin" placeholder="Введите логин" required />
+        </n-form-item>
 
-        <label>
-          <input
-            type="password"
-            :value="password" 
-            @input="updatePassword"
-            placeholder="Введите пароль"
-            required
-          />
-        </label>
+        <n-form-item label="Пароль">
+          <n-input v-model="password" @input="updatePassword" type="password" placeholder="Введите пароль" required />
+        </n-form-item>
 
-        <div class="image-container">
-          <img class="image" src="@/assets/icons/pompom.png" alt="pompom" />
+        <n-alert v-if="error" type="error" :bordered="false" closable>{{ error }}</n-alert>
+
+        <div class="actions">
+          <n-button type="primary" attr-type="submit" :loading="isLoading">Войти</n-button>
+          <n-button type="error" @click="closeModal">Отмена</n-button>
         </div>
-
-        <button type="submit" class="submit-btn">{{ isLoading ? "Вход..." : "Войти" }}</button>
-      </form>
-    </div>
-  </section>
+      </n-form>
+    </n-card>
+  </n-modal>
 </template>
 
 <script>
-import { mapMutations, mapActions, mapState } from "vuex";
+import { defineComponent, ref, watch } from "vue";
+import { mapState, mapActions } from "vuex";
 
-export default {
+import {
+  NModal, NCard, NForm, NFormItem,
+  NInput, NButton, NAlert
+} from "naive-ui";
+
+export default defineComponent({
+  components: {
+    NModal,
+    NCard,
+    NForm,
+    NFormItem,
+    NInput,
+    NButton,
+    NAlert,
+  },
   props: {
     isVisible: {
       type: Boolean,
       required: true,
     },
   },
+  setup(props, { emit }) {
+    const localVisible = ref(props.isVisible);
+
+    watch(() => props.isVisible, (newVal) => {
+      localVisible.value = newVal;
+    });
+
+    function closeModal() {
+      localVisible.value = false;
+      emit("close");
+    }
+
+    return {
+      localVisible,
+      closeModal,
+    };
+  },
   computed: {
     ...mapState("signin", ["login", "password", "isLoading", "error"]),
   },
   methods: {
-    ...mapMutations("signin", ["SET_LOGIN", "SET_PASSWORD"]),
-    ...mapActions("signin", ["signin"]),
-    closeModal() {
-      this.$emit("close");
-    },
+    ...mapActions("signin", ["signin", "updateLogin", "updatePassword"]),
+
     async handleLogin() {
       try {
-        await this.signin(this.$router);
-        this.closeModal()
+        // Метод signin в Vuex-модуле должен возвращать token
+        const token = await this.signin(this.$router);
+        if (token) {
+          localStorage.setItem("token", token); // Сохраняем токен
+          this.closeModal(); // Закрываем модалку
+        }
       } catch (error) {
         console.error("Ошибка авторизации:", error);
       }
     },
-    updateLogin(event) {
-      this.SET_LOGIN(event.target.value);
-    },
-    updatePassword(event) {
-      this.SET_PASSWORD(event.target.value);
-    }
   },
-};
+});
 </script>
 
 <style scoped>
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5); 
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+.actions {
   display: flex;
-  flex-direction: column; 
-  
+  justify-content: space-between;
 }
-
-.modal-content {
-  background: #f2e8fc; 
-  padding: 30px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  width: 500px; 
-  border: 2px solid #000000;
-}
-
-h2 {
-  margin: 0 0 20px;
-  font-size: 24px;
-  font-weight: bold;
-  color: #000;
-  text-transform: uppercase;
-  border-bottom: 2px solid #000;
-  padding-bottom: 5px;
-}
-
-form label input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 30px;
-  border: 1px solid #000;
-  font-size: 16px;
-  color: #000;
-  background: #f2e8fc;
-  text-align: center;
-  padding-right: 0px;
-}
-
-form label input::placeholder {
-  color: #000000;
-}
-
-.image-container {
-  margin: 20px;
-}
-
-.image {
-  width: 100px; 
-  height: auto;
-}
-
-.submit-btn {
-  
-  background: #f2e8fc;
-  color: #000;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.link {
-  color: #000;
-  cursor: pointer;
-  display: flex;
-  margin-top: 15px;
-  width: 50%; 
-  margin-left: auto;
-  margin-right: auto; 
-}
-
 </style>

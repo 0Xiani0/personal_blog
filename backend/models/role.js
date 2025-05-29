@@ -1,25 +1,44 @@
 import db from '../database/index.js';
 
-export default class User {
-    constructor(id, username, email, password_hash, role_id, role_name) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password_hash = password_hash;
-        this.role_id = role_id;
-        this.role_name = role_name;
-    }
+export default class Role {
+  // Получить все роли
+  static async getAll() {
+    const result = await db.query('SELECT id, name FROM roles ORDER BY id');
+    return result.rows;
+  }
 
-    static async get() {
-        return await db.query(
-            `SELECT 
-                users.id,
-                users.username,
-                users.email,
-                users.password_hash,
-                users.role_id,
-                (SELECT name FROM roles WHERE roles.id = users.role_id) AS role_name
-             FROM users`
-        );
-    }
+  // Получить роль по id
+  static async getById(id) {
+    const result = await db.query('SELECT id, name FROM roles WHERE id = $1', [id]);
+    return result.rows[0] || null;
+  }
+
+  // Получить роль по имени
+  static async getByName(name) {
+    const result = await db.query('SELECT id, name FROM roles WHERE name = $1', [name]);
+    return result.rows[0] || null;
+  }
+
+  // Создать новую роль
+  static async create(name) {
+    const result = await db.query(
+      'INSERT INTO roles (name) VALUES ($1) RETURNING id, name',
+      [name]
+    );
+    return result.rows[0];
+  }
+
+  // Обновить имя роли по id
+  static async update(id, name) {
+    const result = await db.query(
+      'UPDATE roles SET name = $1 WHERE id = $2 RETURNING id, name',
+      [name, id]
+    );
+    return result.rows[0] || null;
+  }
+
+  // Удалить роль по id
+  static async delete(id) {
+    await db.query('DELETE FROM roles WHERE id = $1', [id]);
+  }
 }

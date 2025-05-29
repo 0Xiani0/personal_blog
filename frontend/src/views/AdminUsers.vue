@@ -1,109 +1,133 @@
 <template>
-    <section>
-      <article>
-        <h2>Пользователи</h2>
-        <button @click="openAddModal">Добавить пользователя</button>
-      </article>
-  
-      <article v-for="user in users" :key="user.id">
-        <div>
-          <p>#{{ user.id }}</p>
-          <b>Имя пользователя: {{ user.username }}</b>
-          <p>Email: {{ user.email }}</p>
-          <p>Роль: {{ user.role_name }}</p>
-        </div>
-        <div>
-          <button @click="openEditModal(user)">Изменить</button>
-          <button @click="deleteUser(user.id)">Удалить</button>
-        </div>
-      </article>
-  
-      <!-- Модальное окно -->
-      <UserModal
-        :isVisible="isModalVisible"
-        :user="selectedUser"
-        @close="closeModal"
-        @save="saveUser"
-      />
-    </section>
-  </template>
-  
-  <script>
-  import UserModal from "@/components/UserModal.vue";
-  import { mapActions, mapState } from "vuex";
-  
-  export default {
-    components: {
-      UserModal,
-    },
-    data() {
-      return {
-        isModalVisible: false,
-        selectedUser: null,
-      };
-    },
-    computed: {
-      ...mapState("user", ["users"]),
-    },
-    methods: {
-      ...mapActions("user", ["fetchUsers", "saveUserToServer", "deleteUserFromServer"]),
-      openAddModal() {
-        this.selectedUser = null;
-        this.isModalVisible = true;
-      },
-      openEditModal(user) {
-        this.selectedUser = { ...user };
-        this.isModalVisible = true;
-      },
-      closeModal() {
-        this.isModalVisible = false;
-        this.selectedUser = null;
-      },
-      async saveUser(userData) {
-        try {
-          await this.saveUserToServer(userData);
-          await this.fetchUsers();
-        } catch (error) {
-          console.error("Ошибка сохранения пользователя:", error);
-        }
-      },
-      async deleteUser(userId) {
-        try {
-          await this.deleteUserFromServer(userId);
-          await this.fetchUsers();
-        } catch (error) {
-          console.error("Ошибка удаления пользователя:", error);
-        }
-      },
-    },
-    mounted() {
-      this.fetchUsers();
-    },
-  };
-  </script>
+  <n-flex vertical class="user-container">
+    <n-h2 prefix="bar">Пользователи</n-h2>
+
+    <n-alert v-if="error" type="error" :bordered="false" closable>{{ error }}</n-alert>
+
+    <div class="user-list" v-if="users.length > 0">
+      <div
+        v-for="user in users"
+        :key="user.id"
+        class="user-item"
+      >
+        <n-card class="user-card">
+          <div class="card-header">
+            <n-typography class="user-info">
+              <b>#{{ user.id }}</b> {{ user.username }} ({{ user.email }})
+            </n-typography>
+          </div>
+          <template #footer>
+            <div class="user-actions">
+              <n-button class="pink-button" @click="deleteUser(user.id)">Удалить</n-button>
+            </div>
+          </template>
+        </n-card>
+      </div>
+    </div>
+    <n-empty v-else description="Пользователи не найдены" />
+  </n-flex>
+</template>
+
+<script>
+import { NButton, NCard, NH2, NAlert, NEmpty } from 'naive-ui';
+import { mapState, mapActions } from 'vuex';
+
+export default {
+  name: "AdminUsers",
+  components: {
+    NButton,
+    NCard,
+    NH2,
+    NAlert,
+    NEmpty,
+  },
+  computed: {
+    ...mapState('user', ['users', 'error']),
+  },
+  methods: {
+    ...mapActions('user', ['fetchUsers', 'deleteUserFromServer']),
+
+    async deleteUser(userId) {
+      try {
+        await this.deleteUserFromServer(userId);
+      } catch (error) {
+        console.error('Ошибка удаления пользователя:', error);
+      }
+    }
+  },
+  mounted() {
+    this.fetchUsers();
+  }
+}
+</script>
 
 <style scoped>
-section {
-    width: 70%;
-    display: flex;
+.user-container {
+  padding: 2em;
+}
+
+.pink-button {
+  background-color: #f2e8fc;
+  color: #000;
+  font-size: 14px;
+  border: 1px solid #000;
+  transition: background-color 0.3s ease;
+  padding: 8px 16px;
+  width: 100%;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.pink-button:hover {
+  background-color: #f2e8fc;
+  color: #000;
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.user-item {
+  display: flex;
+  width: 100%;
+}
+
+.user-card {
+  width: 100%;
+  box-shadow: none !important;
+  border: none !important;
+  transition: none !important;
+  outline: none !important;
+  --n-focus-box-shadow: none !important;
+  --n-card-box-shadow-hover: none !important;
+  --n-card-border-hover: transparent !important;
+}
+
+.user-card:hover,
+.user-card:focus,
+.user-card:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+  --n-focus-box-shadow: none !important;
+  --n-card-box-shadow-hover: none !important;
+  --n-card-border-hover: transparent !important;
+  border: none !important;
+}
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+@media (max-width: 480px) {
+  .user-actions {
     flex-direction: column;
-    margin: 10px;
-    
-}
-article {
-    border-bottom: 1px solid black;
-    display:flex ;
-    justify-content: space-between;
-}
-button {
-    background-color: #f2e8fc;  
-    color: #333;  
-    font-weight: bold;  /* Жирный текст */
-    font-size: 14px;  /* Размер шрифта */
-    border: 1px solid #000000;  /* Цвет рамки */
-    padding : 10px 20px;  /* Отступы */  
-    cursor: pointer;  /* Курсор при наведении */
-    margin: 10px;
-    
+    align-items: stretch;
+  }
 }
 </style>

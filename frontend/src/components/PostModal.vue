@@ -1,133 +1,114 @@
 <template>
-    <section class="modal" v-if="isVisible" @click.self="closeModal">
-      <div class="modal-content">
-        <h2>{{ post?.id ? "Редактировать пост" : "Создать пост" }}</h2>
-        <form @submit.prevent="handleSave">
-          <label>
-            Название:
-            <input
-              type="text"
-              v-model="postData.heading"
-              placeholder="Введите название"
-              required
-            />
-          </label>
-          
-          <label>
-            Содержание:
-            <textarea
-              v-model="postData.description"
-              placeholder="Введите содержание"
-              required
-            ></textarea>
-          </label>
-  
-          <div class="actions">
-            <button type="submit" class="submit-btn">{{ isSaving ? "Сохранение..." : "Сохранить" }}</button>
-            <button type="button" class="cancel-btn" @click="closeModal">Отмена</button>
-          </div>
-        </form>
+  <n-modal
+    v-model:show="localVisible"
+    :title="post?.id ? 'Редактировать пост' : 'Создать пост'"
+    preset="card"
+    :bordered="false"
+    size="medium"
+    closable
+    @update:show="handleUpdateShow"
+  >
+    <n-form @submit.prevent="handleSave">
+      <n-form-item label="Название">
+        <n-input v-model:value="postData.heading" placeholder="Введите название" required />
+      </n-form-item>
+
+      <n-form-item label="Содержание">
+        <n-input
+          type="textarea"
+          v-model:value="postData.description"
+          placeholder="Введите содержание"
+          required
+        />
+      </n-form-item>
+
+      <n-alert v-if="error" type="error" :bordered="false" closable>{{ error }}</n-alert>
+
+      <div class="actions">
+        <n-button type="primary" attr-type="submit" :loading="isSaving">Сохранить</n-button>
+        <n-button @click="closeModal">Отмена</n-button>
       </div>
-    </section>
-  </template>
-  
-  <script>
-  import { mapState } from "vuex";
-  export default {
-    props: {
-      isVisible: {
-        type: Boolean,
-        required: true,
-      },
-      post: {
-        type: Object,
-        default: () => ({ heading: "", description: "" }),
-      },
+    </n-form>
+  </n-modal>
+</template>
+
+<script>
+import { mapState } from "vuex";
+import { NModal, NForm, NFormItem, NInput, NButton, NAlert } from "naive-ui";
+
+export default {
+  components: {
+    NModal,
+    NForm,
+    NFormItem,
+    NInput,
+    NButton,
+    NAlert,
+  },
+  props: {
+    isVisible: {
+      type: Boolean,
+      required: true,
     },
-    computed: {
-    ...mapState("user", ["id"]), // Получаем userId из Vuex
-    },
-    data() {
-      return {
-        postData: { ...this.post },
-        isSaving: false,
-      };
-    },
-    watch: {
-  post: {
-    immediate: true, // Выполнять при первой передаче post
-    handler(newPost) {
-      this.postData = { ...newPost }; // Копируем данные из post в локальное состояние
+    post: {
+      type: Object,
+      default: () => ({ heading: "", description: "" }),
     },
   },
-},
-    methods: {
-      closeModal() {
-        this.$emit("close");
-      },
-      async handleSave() {
-        this.isSaving = true;
-        try {
-          // Отправляем данные в родительский компонент
-          const postData = { ...this.postData, userId: this.id };
-          this.$emit("save", postData);
-          this.closeModal();
-        } catch (error) {
-          console.error("Ошибка сохранения поста:", error);
-        } finally {
-          this.isSaving = false;
-        }
+  data() {
+    return {
+      localVisible: this.isVisible,
+      postData: { ...this.post },
+      isSaving: false,
+      error: null,
+    };
+  },
+  watch: {
+    isVisible(val) {
+      this.localVisible = val;
+    },
+    post: {
+      immediate: true,
+      handler(newPost) {
+        this.postData = { ...newPost };
       },
     },
-  };
-  </script>
-  
-  <style scoped>
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 5px;
-    width: 400px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  }
-  label {
-    display: block;
-    margin-bottom: 10px;
-  }
-  textarea,
-  input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-  }
-  .actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-  }
-  .submit-btn {
-    background: #4caf50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-  }
-  .cancel-btn {
-    background: #f44336;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-  }
-  </style>
+  },
+  computed: {
+    ...mapState("user", ["id"]),
+  },
+  methods: {
+    handleUpdateShow(val) {
+      if (!val) this.closeModal();
+    },
+    closeModal() {
+      this.$emit("close");
+    },
+    async handleSave() {
+      this.isSaving = true;
+      this.error = null;
+      try {
+        const payload = {
+          ...this.postData,
+          userId: this.id,
+        };
+        this.$emit("save", payload);
+      } catch (err) {
+        this.error = "Не удалось сохранить пост";
+        console.error(err);
+      } finally {
+        this.isSaving = false;
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+</style>
+

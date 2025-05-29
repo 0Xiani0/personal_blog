@@ -1,26 +1,49 @@
 <template>
-    <main>
-      <section>
-        <h2>Профиль</h2>
-      </section>
-      <img src="@/assets/images/profile.png" alt="profile">
-      <div>
-        <p><strong>Никнейм:</strong> {{ username }}</p>
-        <p><strong>Электронная почта:</strong> {{ email }}</p>
-      </div>
-      <div v-if="error" class="error">
-        <p>{{ error }}</p>
-      </div>
-      <div v-if="isLoading" class="loading">
-        <p>Загрузка...</p>
-      </div>
-    </main>
-  </template>
+  <n-spin :show="isLoading" style="padding: auto;">
+    <template #description>
+      Загрузка данных профиля...
+    </template>
+
+    <n-flex vertical style="padding: 2em; max-width: 600px;">
+      <!-- Заголовок, как на других страницах -->
+      <n-h2 prefix="bar">Профиль пользователя</n-h2>
+
+      <!-- Карточка профиля -->
+      <n-card style="width: auto;" bordered>
+        <n-flex align="center" :wrap="false" style="margin-bottom: 1em;">
+          <img
+            src="@/assets/images/profile.png"
+            alt="profile"
+            style="max-width: 120px; object-fit: contain; height: auto; margin-right: 1em;"
+          />
+          <div>
+            <n-p><strong>Никнейм:</strong> {{ username }}</n-p>
+            <n-p><strong>Электронная почта:</strong> {{ email }}</n-p>
+          </div>
+        </n-flex>
+
+        <!-- Ошибка загрузки данных пользователя -->
+        <n-alert v-if="error" title="Ошибка" type="error">
+          {{ error }}
+        </n-alert>
+      </n-card>
+    </n-flex>
+  </n-spin>
+</template>
 
 <script>
+import { NSpin, NCard, NFlex, NAlert, NP, NH2 } from 'naive-ui';
 import { mapGetters } from 'vuex';
 
 export default {
+  components: {
+    NSpin,
+    NCard,
+    NFlex,
+    NAlert,
+    NP,
+    NH2
+  },
   computed: {
     ...mapGetters('user', ['username', 'email', 'error', 'isLoading']),
   },
@@ -40,24 +63,5 @@ export default {
 </script>
 
 <style scoped>
-main{
-
-    
-    container {
-        display: flex;
-        align-items: center; /* Выравнивание по вертикали */
-        gap: 15px; /* Расстояние между изображением и текстом */
-        align-items: flex-start;
-        
-        
-    }
-    img {
-        max-width: 15%;
-        object-fit: contain;
-        margin: 1%;
-        height: auto;
-    }
-   
-}
-   
+/* Здесь можно добавить дополнительные стили, если нужно */
 </style>

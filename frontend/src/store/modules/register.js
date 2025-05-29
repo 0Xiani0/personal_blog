@@ -52,6 +52,18 @@ export default {
     },
 
     actions: {
+        updateLogin({ commit }, payload) {
+            commit('SET_LOGIN', payload);
+        },
+        updateEmail({ commit }, payload) {
+            commit('SET_EMAIL', payload);
+        },
+        updatePassword({ commit }, payload) {
+            commit('SET_PASSWORD', payload)
+        },
+        updatePasswordRepeat({ commit }, payload) {
+            commit('SET_PASSWORD_REPEAT', payload)
+        },
         async register({ commit, state, dispatch }, router) {
             const data = {
               login: state.login,

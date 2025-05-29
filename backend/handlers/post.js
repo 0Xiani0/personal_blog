@@ -4,17 +4,40 @@ class PostHandler {
   // Получить все посты
   async getAll(req, res) {
     try {
-      const posts = await Post.get();
-      res.status(200).json(posts.rows);
+      const currentUserId = req.user?.id || null;  // Получаем ID пользователя
+      const posts = await Post.get(currentUserId);  // Передаем в метод get
+      res.status(200).json(posts);  // Отправляем данные
     } catch (error) {
       console.error('Ошибка получения постов:', error);
       res.status(500).json({ error: 'Ошибка получения постов' });
     }
   }
 
+  // Получить один пост по id
+ async getOne(req, res) {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: 'Некорректный ID поста' });
+    }
+
+    const currentUserId = req.user?.id || null;  // Получаем id текущего пользователя, если авторизован
+    const post = await Post.getOne(id, currentUserId);  // Передаем currentUserId
+
+    if (!post) {
+      return res.status(404).json({ error: 'Пост не найден' });
+    }
+
+    res.status(200).json(post);
+  } catch (error) {
+    console.error('Ошибка получения поста:', error);
+    res.status(500).json({ error: 'Ошибка получения поста' });
+  }
+}
+
+
   // Создать пост
   async create(req, res) {
-    
     const { heading, description, userId } = req.body;
     if (!heading || !description || !userId) {
       return res.status(400).json({ error: 'Некорректные данные для создания поста' });
@@ -31,7 +54,7 @@ class PostHandler {
 
   // Обновить пост
   async update(req, res) {
-    console.log('Получен запрос на создание поста:', req.body);
+    console.log('Получен запрос на обновление поста:', req.body);
     const { id, heading, description } = req.body;
     if (!id || !heading || !description) {
       return res.status(400).json({ error: 'Некорректные данные для обновления поста' });
