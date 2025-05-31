@@ -1,5 +1,6 @@
 import { jwtDecode } from "jwt-decode";
-import axios from "axios";
+import axios from '@/utils/http.js';
+
 
 export default {
   namespaced: true,

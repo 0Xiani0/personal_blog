@@ -34,7 +34,6 @@
 
           <n-button quaternary @click="goToComments(post.id)">
             <n-icon style="margin-right: 4px;"><MessageCircle2 /></n-icon>
-            {{ post.comment_count || 0 }}
           </n-button>
         </template>
       </n-card>

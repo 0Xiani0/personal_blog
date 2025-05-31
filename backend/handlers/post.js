@@ -5,7 +5,21 @@ class PostHandler {
   async getAll(req, res) {
     try {
       const currentUserId = req.user?.id || null;  // Получаем ID пользователя
-      const posts = await Post.get(currentUserId);  // Передаем в метод get
+      const posts = await Post.get(currentUserId);  // Получаем посты
+
+      // Добавим лог даты первого поста для отладки
+      console.log('Дата created_at первого поста (до преобразования):', posts[0]?.created_at);
+
+      // Преобразуем created_at каждого поста в ISO строку с временной зоной
+      posts.forEach(post => {
+        if (post.created_at instanceof Date) {
+          post.created_at = post.created_at.toISOString(); // пример: "2025-05-30T10:30:00.000Z"
+        }
+      });
+
+      // Логируем после преобразования (можно удалить потом)
+      console.log('Дата created_at первого поста (после преобразования):', posts[0]?.created_at);
+
       res.status(200).json(posts);  // Отправляем данные
     } catch (error) {
       console.error('Ошибка получения постов:', error);
@@ -14,27 +28,31 @@ class PostHandler {
   }
 
   // Получить один пост по id
- async getOne(req, res) {
-  try {
-    const id = req.params.id;
-    if (!id) {
-      return res.status(400).json({ error: 'Некорректный ID поста' });
+  async getOne(req, res) {
+    try {
+      const id = req.params.id;
+      if (!id) {
+        return res.status(400).json({ error: 'Некорректный ID поста' });
+      }
+
+      const currentUserId = req.user?.id || null;  // Получаем id текущего пользователя, если авторизован
+      const post = await Post.getOne(id, currentUserId);  // Передаем currentUserId
+
+      if (!post) {
+        return res.status(404).json({ error: 'Пост не найден' });
+      }
+
+      // Аналогично преобразуем дату для одного поста
+      if (post.created_at instanceof Date) {
+        post.created_at = post.created_at.toISOString();
+      }
+
+      res.status(200).json(post);
+    } catch (error) {
+      console.error('Ошибка получения поста:', error);
+      res.status(500).json({ error: 'Ошибка получения поста' });
     }
-
-    const currentUserId = req.user?.id || null;  // Получаем id текущего пользователя, если авторизован
-    const post = await Post.getOne(id, currentUserId);  // Передаем currentUserId
-
-    if (!post) {
-      return res.status(404).json({ error: 'Пост не найден' });
-    }
-
-    res.status(200).json(post);
-  } catch (error) {
-    console.error('Ошибка получения поста:', error);
-    res.status(500).json({ error: 'Ошибка получения поста' });
   }
-}
-
 
   // Создать пост
   async create(req, res) {

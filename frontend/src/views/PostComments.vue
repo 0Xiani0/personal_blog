@@ -45,7 +45,8 @@
     </div>
     <div v-else style="margin-bottom: 1em;">
       <n-alert type="info" closable>
-        Чтобы оставить комментарий, <n-button text type="primary" @click="router.push('/login')">войдите</n-button>
+        Чтобы оставить комментарий, 
+        <n-button text type="primary" @click="openAuthModal">войдите</n-button>
       </n-alert>
     </div>
 
@@ -92,6 +93,9 @@
         </n-card>
       </transition-group>
     </div>
+
+    <!-- Модальное окно авторизации -->
+    <AuthModal :isVisible="showAuthModal" @close="onAuthModalClose" />
   </n-space>
 </template>
 
@@ -107,7 +111,8 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-// axios с базовым URL
+import AuthModal from '@/components/AuthModal.vue'; // импорт модалки авторизации
+
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8081/api',
   timeout: 10000,
@@ -139,6 +144,9 @@ const post = ref(null);
 const comments = ref([]);
 const newComment = ref('');
 const loading = ref({ comments: false, comment: false, like: false, deleting: null });
+
+// Управление модалкой авторизации
+const showAuthModal = ref(false);
 
 const userId = computed(() => store.getters['user/id']);
 const roleId = computed(() => store.getters['user/role_id']);
@@ -201,7 +209,12 @@ const deleteComment = async id => {
 };
 
 const toggleLike = async () => {
-  if (!userId.value) return router.push('/login'), message.warning('Нужно авторизоваться');
+  if (!userId.value) {
+    // Показываем модалку, вместо перехода на /login
+    showAuthModal.value = true;
+    message.warning('Нужно авторизоваться');
+    return;
+  }
   try {
     loading.value.like = true;
     const method = post.value.liked_by_user ? 'delete' : 'post';
@@ -221,12 +234,23 @@ const handleError = (error, defaultMessage) => {
   message.error(msg);
   if (error.response?.status === 401) {
     store.dispatch('auth/logout');
-    router.push('/login');
+    // Показываем модалку, вместо перехода на /login
+    showAuthModal.value = true;
   } else if (error.response?.status === 403) {
     router.push('/403');
   } else if (error.response?.status === 404) {
     router.push('/404');
   }
+};
+
+// Открыть модалку
+const openAuthModal = () => {
+  showAuthModal.value = true;
+};
+
+// Закрыть модалку
+const onAuthModalClose = () => {
+  showAuthModal.value = false;
 };
 
 onMounted(fetchData);
