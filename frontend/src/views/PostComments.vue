@@ -107,33 +107,11 @@ import {
 import { Heart } from '@vicons/tabler';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import axios from 'axios';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-import AuthModal from '@/components/AuthModal.vue'; // импорт модалки авторизации
-
-const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8081/api',
-  timeout: 10000,
-  withCredentials: true
-});
-
-axiosInstance.interceptors.request.use(config => {
-  const token = localStorage.getItem('access_token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-axiosInstance.interceptors.response.use(
-  res => res,
-  err => {
-    if (err.code === 'ECONNABORTED') {
-      err.response = { status: 408, data: { message: 'Превышено время ожидания сервера' }};
-    }
-    return Promise.reject(err);
-  }
-);
+import AuthModal from '@/components/AuthModal.vue';
+import axiosInstance from '@/utils/axios.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -145,7 +123,6 @@ const comments = ref([]);
 const newComment = ref('');
 const loading = ref({ comments: false, comment: false, like: false, deleting: null });
 
-// Управление модалкой авторизации
 const showAuthModal = ref(false);
 
 const userId = computed(() => store.getters['user/id']);
@@ -210,7 +187,6 @@ const deleteComment = async id => {
 
 const toggleLike = async () => {
   if (!userId.value) {
-    // Показываем модалку, вместо перехода на /login
     showAuthModal.value = true;
     message.warning('Нужно авторизоваться');
     return;
@@ -220,7 +196,7 @@ const toggleLike = async () => {
     const method = post.value.liked_by_user ? 'delete' : 'post';
     await axiosInstance({ method, url: `/posts/${post.value.id}/like` });
     post.value.liked_by_user = !post.value.liked_by_user;
-    post.value.like_count += post.value.liked_by_user ? 1 : -1;
+    post.value.like_count = (Number(post.value.like_count) || 0) + (post.value.liked_by_user ? 1 : -1);
   } catch (e) {
     handleError(e, 'Не удалось обновить лайк');
   } finally {
@@ -234,7 +210,6 @@ const handleError = (error, defaultMessage) => {
   message.error(msg);
   if (error.response?.status === 401) {
     store.dispatch('auth/logout');
-    // Показываем модалку, вместо перехода на /login
     showAuthModal.value = true;
   } else if (error.response?.status === 403) {
     router.push('/403');
@@ -243,12 +218,10 @@ const handleError = (error, defaultMessage) => {
   }
 };
 
-// Открыть модалку
 const openAuthModal = () => {
   showAuthModal.value = true;
 };
 
-// Закрыть модалку
 const onAuthModalClose = () => {
   showAuthModal.value = false;
 };

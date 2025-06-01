@@ -1,6 +1,5 @@
-import { jwtDecode } from "jwt-decode";
-import axios from '@/utils/http.js';
-
+import { jwtDecode } from 'jwt-decode';
+import axios from '@/utils/axios.js';
 
 export default {
   namespaced: true,
@@ -56,7 +55,7 @@ export default {
       commit('SET_ERROR', null);
 
       try {
-        let accessToken = localStorage.getItem('access_token');
+        const accessToken = localStorage.getItem('access_token');
         if (!accessToken) {
           commit('SET_ERROR', 'Token not found!');
           router.push('/signin');
@@ -66,7 +65,7 @@ export default {
         const decodedToken = jwtDecode(accessToken);
         const username = decodedToken.username;
 
-        const response = await axios.get(`http://localhost:8081/api/users/${username}`);
+        const response = await axios.get(`/users/${username}`);
         commit('SET_USER_DATA', response.data);
       } catch (error) {
         console.error("Ошибка получения данных пользователя:", error);
@@ -79,7 +78,7 @@ export default {
 
     async fetchUsers({ commit }) {
       try {
-        const response = await axios.get("http://localhost:8081/api/users");
+        const response = await axios.get("/users");
         commit("SET_USERS", response.data);
       } catch (error) {
         console.error("Ошибка загрузки пользователей:", error);
@@ -90,9 +89,9 @@ export default {
     async saveUserToServer({ dispatch }, user) {
       try {
         if (user.id) {
-          await axios.put(`http://localhost:8081/api/users/${user.id}`, user);
+          await axios.put(`/users/${user.id}`, user);
         } else {
-          await axios.post("http://localhost:8081/api/users", user);
+          await axios.post("/users", user);
         }
         await dispatch("fetchUsers");
       } catch (error) {
@@ -102,7 +101,7 @@ export default {
 
     async deleteUserFromServer({ dispatch }, userId) {
       try {
-        await axios.delete(`http://localhost:8081/api/users/${userId}`);
+        await axios.delete(`/users/${userId}`);
         await dispatch("fetchUsers");
       } catch (error) {
         console.error("Ошибка удаления пользователя:", error);

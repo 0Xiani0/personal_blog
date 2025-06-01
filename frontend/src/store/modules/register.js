@@ -1,4 +1,4 @@
-import axios from '@/utils/http.js';
+import api from '@/utils/axios.js';
 
 export default {
   namespaced: true,
@@ -75,7 +75,7 @@ export default {
       commit('CLEAR_ERROR');
 
       try {
-        const response = await axios.post('/auth/registration', data);
+        const response = await api.post('/auth/registration', data);
         if (response.status !== 200) {
           commit('SET_ERROR', "Register Error! Status " + response.status);
           console.error("Register Error! Status " + response.status);

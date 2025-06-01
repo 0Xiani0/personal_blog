@@ -1,4 +1,4 @@
-import axios from '@/utils/http.js';
+import axios from '@/utils/axios.js';
 
 export default {
   namespaced: true,

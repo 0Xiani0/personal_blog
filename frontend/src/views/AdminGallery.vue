@@ -63,10 +63,7 @@ import {
   useMessage
 } from 'naive-ui'
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
-
-// Добавь базовый URL для запросов на сервер API
-axios.defaults.baseURL = 'http://localhost:8081'
+import axios from '@/utils/axios.js' // ✅ axiosInstance с токеном и baseURL
 
 const message = useMessage()
 const photos = ref([])
@@ -75,7 +72,7 @@ const photoName = ref('')
 
 const fetchPhotos = async () => {
   try {
-    const res = await axios.get('/api/photos')
+    const res = await axios.get('/images') // ✅ соответствует переименованной таблице
     photos.value = res.data
   } catch (err) {
     message.error('Ошибка загрузки фотографий')
@@ -98,7 +95,7 @@ const uploadPhoto = async () => {
   form.append('name', photoName.value)
 
   try {
-    const res = await axios.post('/api/photos/upload', form, {
+    const res = await axios.post('/images/upload', form, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     photos.value.unshift(res.data)
@@ -113,7 +110,7 @@ const uploadPhoto = async () => {
 
 const deletePhoto = async (id) => {
   try {
-    await axios.delete(`/api/photos/${id}`)
+    await axios.delete(`/images/${id}`)
     photos.value = photos.value.filter(p => p.id !== id)
     message.success('Фото удалено')
   } catch (err) {
@@ -124,20 +121,3 @@ const deletePhoto = async (id) => {
 
 onMounted(fetchPhotos)
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  
-  

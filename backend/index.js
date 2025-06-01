@@ -4,7 +4,7 @@ import path from 'path';
 
 import router from './routers/index.js';
 
-const PORT = 8081;
+const PORT = 12340;
 const app = express();
 
 // Разрешаем JSON и CORS

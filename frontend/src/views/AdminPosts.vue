@@ -2,14 +2,14 @@
   <n-flex vertical class="post-container">
     <n-h2 prefix="bar">Посты</n-h2>
 
-    <n-button class="pink-button" @click="openAddModal">
+    <n-button class="custom-button" @click="openAddModal">
       Добавить
     </n-button>
 
-    <!-- Ошибка, если она есть -->
-    <n-alert v-if="error" type="error" :bordered="false" closable>{{ error }}</n-alert>
+    <n-alert v-if="error" type="error" :bordered="false" closable @close="error = null">
+      {{ error }}
+    </n-alert>
 
-    <!-- Список постов -->
     <div class="post-list" v-if="posts.length > 0">
       <div
         v-for="post in posts"
@@ -24,8 +24,8 @@
           </div>
           <template #footer>
             <div class="post-actions">
-              <n-button class="pink-button" @click="openEditModal(post)">Изменить</n-button>
-              <n-button class="pink-button" @click="deletePost(post.id)">Удалить</n-button>
+              <n-button class="custom-button" @click="openEditModal(post)">Изменить</n-button>
+              <n-button class="custom-button" @click="deletePost(post.id)">Удалить</n-button>
             </div>
           </template>
         </n-card>
@@ -33,7 +33,6 @@
     </div>
     <n-empty v-else description="Нет постов" />
 
-    <!-- Модальное окно -->
     <PostModal
       :isVisible="isModalVisible"
       :post="selectedPost"
@@ -46,7 +45,10 @@
 <script>
 import { NButton, NCard, NH2, NAlert, NEmpty } from 'naive-ui';
 import PostModal from "@/components/PostModal.vue";
-import { mapActions, mapState } from "vuex";
+// импортируем axios instance
+import api from '@/utils/axios.js';
+
+
 
 export default {
   components: {
@@ -62,14 +64,10 @@ export default {
       isModalVisible: false,
       selectedPost: null,
       error: null,
+      posts: [],
     };
   },
-  computed: {
-    ...mapState("posts", ["posts"]),
-  },
   methods: {
-    ...mapActions("posts", ["fetchPosts", "savePostToServer", "deletePostFromServer"]),
-
     openAddModal() {
       this.selectedPost = null;
       this.isModalVisible = true;
@@ -85,11 +83,30 @@ export default {
       this.selectedPost = null;
     },
 
+    async fetchPosts() {
+      try {
+        // Убираем /api из пути
+        const res = await api.get('/posts');
+        this.posts = res.data;
+        this.error = null;
+      } catch (err) {
+        console.error('Ошибка загрузки постов:', err);
+        this.error = 'Ошибка загрузки постов.';
+      }
+    },
+
     async savePost(postData) {
       try {
-        await this.savePostToServer(postData);
+        if (postData.id) {
+          // обновление
+          await api.put(`/posts/${postData.id}`, postData);
+        } else {
+          // создание
+          await api.post('/posts', postData);
+        }
         await this.fetchPosts();
         this.error = null;
+        this.closeModal();
       } catch (error) {
         console.error("Ошибка сохранения поста:", error);
         this.error = "Не удалось сохранить пост.";
@@ -97,8 +114,12 @@ export default {
     },
 
     async deletePost(postId) {
+      if (!postId) {
+        this.error = "Неверный ID поста.";
+        return;
+      }
       try {
-        await this.deletePostFromServer(postId);
+        await api.delete(`/posts/${postId}`);
         await this.fetchPosts();
         this.error = null;
       } catch (error) {
@@ -118,7 +139,7 @@ export default {
   padding: 2em;
 }
 
-.pink-button {
+.custom-button {
   background-color: #f2e8fc;
   color: #000;
   font-size: 14px;
@@ -129,8 +150,8 @@ export default {
   border-radius: 0;
 }
 
-.pink-button:hover {
-  background-color: #f2e8fc;
+.custom-button:hover {
+  background-color: #d9c9f9;
   color: #000;
 }
 
@@ -146,19 +167,17 @@ export default {
   width: 100%;
 }
 
-/* Основной стиль для карточек без теней и обводок */
 .post-card {
   width: 100%;
   box-shadow: none !important;
   transition: none !important;
   outline: none !important;
-  --n-focus-box-shadow: none !important; /* Убираем тень фокуса Naive UI */
-  --n-card-box-shadow-hover: none !important; /* Убираем тень при наведении */
-  --n-card-border-hover: transparent !important; /* Убираем границу при наведении */
-  border: none !important; /* Убираем стандартную границу */
+  --n-focus-box-shadow: none !important;
+  --n-card-box-shadow-hover: none !important;
+  --n-card-border-hover: transparent !important;
+  border: none !important;
 }
 
-/* Убираем все тени и обводки при наведении */
 .post-card:hover,
 .post-card:focus,
 .post-card:focus-visible {
@@ -184,8 +203,3 @@ export default {
   }
 }
 </style>
-
-
-
-
-

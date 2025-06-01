@@ -10,7 +10,7 @@ class PhotoHandler {
       }
 
       // Используем базовый URL из env или дефолт
-      const baseUrl = process.env.SERVER_URL || 'http://localhost:8081';
+      const baseUrl = process.env.SERVER_URL || 'http://localhost:12345';
       const url = `${baseUrl}/uploads/${req.file.filename}`;
       const name = req.body.name || req.file.originalname;
 

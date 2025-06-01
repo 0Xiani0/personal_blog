@@ -1,97 +1,114 @@
-import axios from '@/utils/http.js';
+import axios from '@/utils/axios.js';
 
 export default {
   namespaced: true,
-
   state: {
-    login: '',
-    email: '',
-    password: '',
-    passwordRepeat: '',
+    posts: [],
     isLoading: false,
-    error: null
+    error: null,
+    searchQuery: '', // Поле для хранения поискового запроса
   },
-
   getters: {
-    login: (state) => state.login,
-    email: (state) => state.email,
-    password: (state) => state.password,
-    passwordRepeat: (state) => state.passwordRepeat,
+    allPosts: (state) => state.posts || null,
     isLoading: (state) => state.isLoading,
-    error: (state) => state.error
+    error: (state) => state.error,
+    // Геттер для фильтрации постов по запросу
+    filteredPosts: (state) => {
+      if (!state.searchQuery) return state.posts;
+      return state.posts.filter(post =>
+        post.heading.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+        post.description.toLowerCase().includes(state.searchQuery.toLowerCase())
+      );
+    },
   },
-
   mutations: {
-    SET_LOGIN(state, payload) {
-      state.login = payload;
+    SET_POSTS(state, posts) {
+      state.posts = posts;
     },
-    SET_EMAIL(state, payload) {
-      state.email = payload;
+    SET_ERROR(state, error) {
+      state.error = error;
     },
-    SET_PASSWORD(state, payload) {
-      state.password = payload;
+    LOADING(state) {
+      state.isLoading = true;
     },
-    SET_PASSWORD_REPEAT(state, payload) {
-      state.passwordRepeat = payload;
+    LOADED(state) {
+      state.isLoading = false;
     },
-    SET_LOADING(state, payload) {
-      state.isLoading = payload;
-    },
-    SET_ERROR(state, payload) {
-      state.error = payload;
-    },
-    CLEAR_ERROR(state) {
-      state.error = null;
-    },
-    CLEAR_ALL_DATA(state) {
-      state.login = '';
-      state.email = '';
-      state.password = '';
-      state.passwordRepeat = '';
-    }
-  },
-
-  actions: {
-    updateLogin({ commit }, payload) {
-      commit('SET_LOGIN', payload);
-    },
-    updateEmail({ commit }, payload) {
-      commit('SET_EMAIL', payload);
-    },
-    updatePassword({ commit }, payload) {
-      commit('SET_PASSWORD', payload);
-    },
-    updatePasswordRepeat({ commit }, payload) {
-      commit('SET_PASSWORD_REPEAT', payload);
-    },
-    async register({ commit, state, dispatch }, router) {
-      const data = {
-        login: state.login,
-        email: state.email,
-        password: state.password
-      };
-
-      commit('SET_LOADING', true);
-      commit('CLEAR_ERROR');
-
-      try {
-        const response = await axios.post('/auth/registration', data);
-        if (response.status !== 200) {
-          commit('SET_ERROR', "Register Error! Status " + response.status);
-          console.error("Register Error! Status " + response.status);
-          return;
-        }
-        commit('signin/SET_LOGIN', data.login, { root: true });
-        commit('signin/SET_PASSWORD', data.password, { root: true });
-        await dispatch('signin/signin', router, { root: true });
-        commit('CLEAR_ALL_DATA');
-      } catch (error) {
-        console.error("Ошибка регистрации:", error);
-        commit('SET_ERROR', "Ошибка регистрации. Проверьте ваши учетные данные.");
-        commit('CLEAR_ALL_DATA');
-      } finally {
-        commit('SET_LOADING', false);
+    UPDATE_POST_LIKE(state, { postId, liked_by_user, like_count }) {
+      const post = state.posts.find((p) => p.id === postId);
+      if (post) {
+        post.liked_by_user = liked_by_user;
+        post.like_count = like_count;
       }
-    }
-  }
+    },
+    SET_SEARCH_QUERY(state, query) {
+      state.searchQuery = query;
+    },
+  },
+  actions: {
+    async fetchPosts({ commit }) {
+      try {
+        commit('LOADING');
+        const response = await axios.get('/posts');
+        commit('SET_POSTS', response.data);
+      } catch (error) {
+        const errMessage = `Ошибка при загрузке постов: ${error.response?.data?.message || error.message}`;
+        commit('SET_ERROR', errMessage);
+        console.error(errMessage);
+      } finally {
+        commit('LOADED');
+      }
+    },
+    async savePostToServer({ dispatch, commit }, post) {
+      try {
+        if (post.id) {
+          await axios.put(`/posts/${post.id}`, post);
+        } else {
+          await axios.post('/posts', post);
+        }
+        await dispatch('fetchPosts');
+      } catch (error) {
+        const errMessage = `Ошибка при сохранении поста: ${error.response?.data?.message || error.message}`;
+        commit('SET_ERROR', errMessage);
+        console.error(errMessage);
+      }
+    },
+    async deletePostFromServer({ dispatch, commit }, postId) {
+      try {
+        await axios.delete(`/posts/${postId}`);
+        await dispatch('fetchPosts');
+      } catch (error) {
+        const errMessage = `Ошибка при удалении поста: ${error.response?.data?.message || error.message}`;
+        commit('SET_ERROR', errMessage);
+        console.error(errMessage);
+      }
+    },
+    async likePost({ commit }, postId) {
+      try {
+        const response = await axios.post(`/posts/${postId}/like`);
+        commit('UPDATE_POST_LIKE', {
+          postId,
+          liked_by_user: true,
+          like_count: response.data.like_count,
+        });
+      } catch (error) {
+        console.error("Ошибка при лайке поста:", error);
+      }
+    },
+    async unlikePost({ commit }, postId) {
+      try {
+        const response = await axios.delete(`/posts/${postId}/like`);
+        commit('UPDATE_POST_LIKE', {
+          postId,
+          liked_by_user: false,
+          like_count: response.data.like_count,
+        });
+      } catch (error) {
+        console.error("Ошибка при удалении лайка:", error);
+      }
+    },
+    setSearchQuery({ commit }, query) {
+      commit('SET_SEARCH_QUERY', query);
+    },
+  },
 };

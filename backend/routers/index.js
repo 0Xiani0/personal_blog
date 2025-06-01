@@ -29,7 +29,8 @@ router.use('/posts', postRouter);
 router.use('/users', userRouter);
 router.use('/auth', authRouter);
 router.use('/tags', tagRouter);
-router.use('/photos', photoRouter);
+router.use('/images', photoRouter);
+
 
 // Подключаем комментарии без префикса, так как в commentRouter пути уже полные
 router.use('/', commentRouter);
