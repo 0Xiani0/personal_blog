@@ -4,13 +4,13 @@ import path from 'path';
 
 import router from './routers/index.js';
 
-const PORT = 12340;
+const PORT = 80;
 const app = express();
 
 // Разрешаем JSON и CORS
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:8080', // адрес твоего фронтенда
+  origin: 'https://xiany.ru', // адрес твоего фронтенда
   credentials: true                // разрешаем куки и заголовки авторизации
 }));
 

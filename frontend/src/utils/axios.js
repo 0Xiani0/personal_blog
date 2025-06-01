@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL,
+  baseURL: 'https://xiany.ru/',
   timeout: 10000,
   withCredentials: true
 });
